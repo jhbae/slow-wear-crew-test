@@ -876,6 +876,9 @@
                 const snapshot = await database.ref(`responses/${currentUser}/week${currentWeek}/sensory`).once('value');
                 let previousResponses = snapshot.val();
 
+                console.log(snapshot);
+                console.log(previousResponses);
+
                 // ✅ [추가] 임시 저장 데이터 로드 및 병합 (Firebase 데이터보다 우선)
                 const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
                 const draftString = localStorage.getItem(storageKey);
