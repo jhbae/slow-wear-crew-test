@@ -418,7 +418,7 @@
     <div class="container">
         <div class="header">
             <h1>🌈 슬로 웨어 크루 </h1>
-            <p>주차별 감각 반응 평가</p>
+            <p>감각 체크리스트</p>
         </div>
 
         <div class="content">
@@ -677,21 +677,23 @@
                 const progressDiv = document.getElementById('participantProgress');
                 progressDiv.innerHTML = `
                     <div style="font-size: 48px; font-weight: bold; color: white;">
-                        ${completedWeeks}/4
+                        ${completedWeeks}/2
                     </div>
                     <div style="font-size: 18px; margin-top: 10px;">
                         완료
                     </div>
                     <div class="progress-bar" style="margin-top: 15px; background: rgba(255,255,255,0.3);">
-                        <div class="progress-fill" style="width: ${(completedWeeks/4)*100}%; background: white;"></div>
+                        <div class="progress-fill" style="width: ${(completedWeeks/2)*100}%; background: white;"></div>
                     </div>
                 `;
                 
                 // 주차별 카드
                 const weekGrid = document.getElementById('weekGrid');
                 weekGrid.innerHTML = '';
+
+                const targetWeeks = [1, 4];
                 
-                for (let week = 1; week <= 4; week++) {
+                for (const week of targetWeeks) {
                     const weekData = myResponses[`week${week}`];
                     const weekCard = document.createElement('div');
                     weekCard.className = 'week-card-large';
@@ -853,11 +855,11 @@
 
             try {
                 // 기존 응답 데이터 가져오기
-                const snapshot = await database.ref(`responses/${currentUser}/week${currentWeek}/sensory`).once('value');
+                const snapshot = await database.ref(`responses/${currentUser}/week${currentWeek}`).once('value');
                 let previousResponses = snapshot.val();
 
                 // ✅ [추가] 임시 저장 데이터 로드 및 병합 (Firebase 데이터보다 우선)
-                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_week${currentWeek}_${currentUser}`;
                 const draftString = localStorage.getItem(storageKey);
                 
                 if (draftString) {
@@ -911,7 +913,7 @@
             
             // 데이터가 유효할 때만 저장 (로그인되지 않은 경우 등 제외)
             if (currentUser && tempResponses.data) {
-                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_week${currentWeek}_${currentUser}`;
                 localStorage.setItem(storageKey, JSON.stringify(tempResponses.data));
             }
         }
@@ -973,10 +975,10 @@
             }
             
             try {
-                await database.ref(`responses/${currentUser}/week${currentWeek}/sensory`).set(data);
+                await database.ref(`responses/${currentUser}/week${currentWeek}`).set(data);
 
                 // 임시 저장 데이터 삭제
-                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_week${currentWeek}_${currentUser}`;
                 localStorage.removeItem(storageKey);
                 
                 alert('제출이 완료되었습니다!');
@@ -1076,12 +1078,13 @@
                     const participantCount = participantIds.length;
                     
                     // 완료율 계산
-                    let totalWeeks = participantCount * 4;
+                    let totalWeeks = participantCount * 2;
                     let completedWeeks = 0;
                     
                     participantIds.forEach(userId => {
                         const userResponses = allResponses[userId] || {};
-                        completedWeeks += Object.keys(userResponses).length;
+                        if (userResponses['week1']) completedWeeks++;
+                        if (userResponses['week4']) completedWeeks++;
                     });
                     
                     const completionRate = totalWeeks > 0 ? Math.round((completedWeeks / totalWeeks) * 100) : 0;
@@ -1207,7 +1210,8 @@
                     </div>
                 `;
                 
-                for (let week = 1; week <= 4; week++) {
+                const targetWeeks = [1, 4];
+                for (const week of targetWeeks) {
                     const weekData = userResponses[`week${week}`];
                     
                     if (!weekData) {
