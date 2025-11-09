@@ -855,11 +855,11 @@
 
             try {
                 // 기존 응답 데이터 가져오기
-                const snapshot = await database.ref(`responses/${currentUser}/week${currentWeek}`).once('value');
+                const snapshot = await database.ref(`responses/${currentUser}/week${currentWeek}/sensory`).once('value');
                 let previousResponses = snapshot.val();
 
                 // ✅ [추가] 임시 저장 데이터 로드 및 병합 (Firebase 데이터보다 우선)
-                const storageKey = `draft_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
                 const draftString = localStorage.getItem(storageKey);
                 
                 if (draftString) {
@@ -913,7 +913,7 @@
             
             // 데이터가 유효할 때만 저장 (로그인되지 않은 경우 등 제외)
             if (currentUser && tempResponses.data) {
-                const storageKey = `draft_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
                 localStorage.setItem(storageKey, JSON.stringify(tempResponses.data));
             }
         }
@@ -975,10 +975,10 @@
             }
             
             try {
-                await database.ref(`responses/${currentUser}/week${currentWeek}`).set(data);
+                await database.ref(`responses/${currentUser}/week${currentWeek}/sensory`).set(data);
 
                 // 임시 저장 데이터 삭제
-                const storageKey = `draft_week${currentWeek}_${currentUser}`;
+                const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
                 localStorage.removeItem(storageKey);
                 
                 alert('제출이 완료되었습니다!');
