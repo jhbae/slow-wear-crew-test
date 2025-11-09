@@ -25,6 +25,14 @@
         .btn-link { flex: 1; display: block; padding: 18px; text-decoration: none; border-radius: 10px; font-size: 16px; font-weight: 600; text-align: center; color: white; transition: transform 0.2s; }
         #link-sensory { background: #FF99AA; }
         #link-progress { background: #667eea; }
+        .disabled {
+            /* 텍스트 색상을 흐리게 */
+            color: #aaa !important;
+            /* 마우스 커서를 '금지' 모양으로 변경 */
+            cursor: not-allowed !important;
+            /* 클릭 이벤트가 요소 아래로 전달되도록 설정 (옵션) */
+            pointer-events: none; 
+        }
     </style>
 </head>
 <body>
@@ -50,7 +58,7 @@
                     <a id="link-sensory" href="sensory.html#dashboard" class="btn-link">
                         💆 감각 체크리스트 (1주/4주)
                     </a>
-                    <a id="link-progress" href="progress.html#dashboard" class="btn-link">
+                    <a id="link-progress" href="progress.html#dashboard" class="btn-link disabled">
                         📈 주차별 변화기록 (1~4주)
                     </a>
                 </div>
