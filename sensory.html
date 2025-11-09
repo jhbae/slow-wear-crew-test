@@ -891,6 +891,9 @@
                     const categoryDiv = document.createElement('div');
                     categoryDiv.className = 'category';
 
+                    console.log(snapshot);
+                    console.log(previousResponses);
+
                     const categoryResponseData = previousResponses?.[category.id];
                     
                     // [재사용] 헤더 + 질문 폼 (수정 가능 모드)
