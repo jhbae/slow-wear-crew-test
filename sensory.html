@@ -673,7 +673,22 @@
                 const myResponses = responsesSnapshot.val() || {};
                 
                 // 진행 현황 표시
-                const completedWeeks = Object.keys(myResponses).length;
+                let completedWeeks = 0; 
+                const targetWeeks = [1, 4]; // 1주차와 4주차만 처리
+                
+                for (const week of targetWeeks) {
+                    const weekData = myResponses[`week${week}`];
+                    
+                    // ✅ [수정] weekData가 존재하고, 그 안에 sensory 키가 존재하는지 확인
+                    const isSubmitted = weekData && weekData.sensory; 
+                    
+                    if (isSubmitted) {
+                        completedWeeks++;
+                    }
+                }
+
+                
+                
                 const progressDiv = document.getElementById('participantProgress');
                 progressDiv.innerHTML = `
                     <div style="font-size: 48px; font-weight: bold; color: white;">
@@ -691,19 +706,21 @@
                 const weekGrid = document.getElementById('weekGrid');
                 weekGrid.innerHTML = '';
 
-                const targetWeeks = [1, 4];
+                
                 
                 for (const week of targetWeeks) {
                     const weekData = myResponses[`week${week}`];
                     const weekCard = document.createElement('div');
                     weekCard.className = 'week-card-large';
+
+                    const isSubmitted = weekData && weekData.sensory;
                     
-                    if (weekData) {
+                    if (isSubmitted) {
                         weekCard.classList.add('completed');
                         
                         let categoryScores = '';
                         surveyData.categories.forEach((category) => {
-                            const catData = weekData[category.id];
+                            const catData = weekData.sensory[category.id];
                             
                             // ✅ [수정] catData가 있고, questions가 있을 때만 계산
                             if (catData && catData.questions) {
