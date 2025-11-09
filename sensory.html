@@ -717,6 +717,7 @@
                     
                     if (isSubmitted) {
                         weekCard.classList.add('completed');
+                        const submissionTime = weekData.sensory.timestamp;
                         
                         let categoryScores = '';
                         surveyData.categories.forEach((category) => {
@@ -743,7 +744,7 @@
                         weekCard.innerHTML = `
                             <div class="week-header">
                                 <h3>${week}주차 ✓</h3>
-                                <div class="week-date">${new Date(weekData.timestamp).toLocaleDateString('ko-KR')}</div>
+                                <div class="week-date">${new Date(submissionTime).toLocaleDateString('ko-KR')}</div>
                             </div>
                             <div class="week-content">
                                 ${categoryScores}
