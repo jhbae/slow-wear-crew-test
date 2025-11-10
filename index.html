@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; position: relative; }
         .header h1 { font-size: 28px; margin-bottom: 10px; }
         .header p { opacity: 0.9; font-size: 14px; }
         .content { padding: 30px; }
@@ -33,11 +33,30 @@
             /* 클릭 이벤트가 요소 아래로 전달되도록 설정 (옵션) */
             pointer-events: none; 
         }
+        .admin-link { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            text-decoration: none; 
+            font-size: 12px; 
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .admin-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <a href="admin.html" class="admin-link">🔐 Admin</a>  <!-- ← 이 줄 추가 -->
             <h1>슬로우 웨어 크루</h1>
             <p>설문 선택 및 접속</p>
         </div>
