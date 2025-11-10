@@ -332,6 +332,21 @@
             animation: dots 1.5s steps(4, end) infinite;
         }
 
+        /* * [추가] 민감도 배지 스타일 
+         * (sensory.html의 .sensitivity 클래스를 기반으로) 
+         */
+        .admin-sensitivity {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block; /* 중요 */
+        }
+        .admin-sensitivity.low { background: #d4edda; color: #155724; }
+        .admin-sensitivity.medium { background: #fff3cd; color: #856404; }
+        .admin-sensitivity.high { background: #f8d7da; color: #721c24; }
+        .admin-sensitivity.na { background: #e9ecef; color: #495057; } /* N/A 스타일 추가 */
+
         @keyframes dots {
             0%, 20% { content: '.'; }
             40% { content: '..'; }
@@ -689,6 +704,18 @@
             }).join('');
         }
 
+        function calculateSensitivity(score, scoreRange) {
+            // scoreRange 데이터가 없을 경우 기본값 반환
+            if (!scoreRange) {
+                return { level: 'medium', text: 'N/A' };
+            }
+            if (score >= scoreRange.low[0] && score <= scoreRange.low[1]) return { level: 'low', text: '낮음' };
+            if (score >= scoreRange.medium[0] && score <= scoreRange.medium[1]) return { level: 'medium', text: '보통' };
+            if (score >= scoreRange.high[0] && score <= scoreRange.high[1]) return { level: 'high', text: '높음' };
+            
+            return { level: 'na', text: '범위 오류' };
+        }
+
         function renderWeekResponse(weekLabel, responseData, surveyTemplate) {
             if (!responseData) return '';
 
@@ -696,9 +723,9 @@
                 const categoryData = responseData[category.id];
                 if (!categoryData) return '';
 
-                const totalScore = categoryData.questions.reduce((sum, q) => sum + q.value, 0);
-                const maxScore = category.questions.length * 3;
-                const scorePercent = (totalScore / maxScore * 100).toFixed(0);
+                // [수정] totalScore만 계산 (maxScore, scorePercent 삭제)
+                const totalScore = categoryData.questions.reduce((sum, q) => sum + q.value, 0); // [추가] 민감도 계산
+                const sensitivity = calculateSensitivity(totalScore, category.scoreRange);
 
                 const questionsHTML = category.questions.map((question, idx) => {
                     const answer = categoryData.questions[idx];
@@ -719,10 +746,14 @@
 
                 return `
                     <div class="category-section" style="margin-bottom: 15px;">
-                        <div class="category-title" style="background: #f0f0f0; padding: 8px; border-radius: 6px;">
-                            <span>${category.icon}</span>
-                            <span style="font-size: 14px;">${category.title}</span>
-                            <span style="margin-left: auto; font-size: 13px; color: #667eea;">${totalScore}/${maxScore} (${scorePercent}%)</span>
+                        <div class="category-title" style="background: #f0f0f0; padding: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div> <span>${category.icon}</span>
+                                <span style="font-size: 14px;">${category.title}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 14px; font-weight: 600; color: #667eea; margin-right: 8px;">${totalScore}점</span>
+                                <span class="admin-sensitivity ${sensitivity.level}">${sensitivity.text}</span>
+                            </div>
                         </div>
                         ${questionsHTML}
                     </div>
