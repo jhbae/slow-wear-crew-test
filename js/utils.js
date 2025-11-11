@@ -27,3 +27,6 @@ function calculateSensitivity(score, scoreRange) {
     // 범위를 벗어난 경우
     return { level: 'na', text: '범위 오류' };
 }
+
+// 브라우저 전역 변수로 노출 (중요!)
+window.calculateSensitivity = calculateSensitivity;
