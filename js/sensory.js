@@ -72,10 +72,19 @@ function logout() {
 
 // 참가자 대시보드 로드
 async function loadParticipantDashboard() {
-    // ✅ [추가] 설문지 로드 확인
-    if (!await ensureSurveyDataLoaded()) return;
+    console.log('[DEBUG] loadParticipantDashboard 시작');
 
-    if (!currentUser || !currentSessionId) return;
+    // ✅ [추가] 설문지 로드 확인
+    if (!await ensureSurveyDataLoaded()) {
+        console.log('[DEBUG] 설문지 로드 실패');
+        return;
+    }
+    console.log('[DEBUG] 설문지 로드 성공:', surveyData);
+
+    if (!currentUser || !currentSessionId) {
+        console.log('[DEBUG] 사용자 정보 없음:', { currentUser, currentSessionId });
+        return;
+    }
 
     try {
         // 회차 정보 가져오기
@@ -148,7 +157,9 @@ async function loadParticipantDashboard() {
                     if (catData && catData.questions) {
                         // ✅ [수정] 점수를 동적으로 계산
                         const calculatedTotal = catData.questions.reduce((sum, q) => sum + q.value, 0);
+                        console.log('[DEBUG] calculateSensitivity 호출 전:', { calculatedTotal, scoreRange: category.scoreRange });
                         const sensitivity = calculateSensitivity(calculatedTotal, category.scoreRange);
+                        console.log('[DEBUG] calculateSensitivity 결과:', sensitivity);
 
                         categoryScores += `
                             <div class="score-item">
