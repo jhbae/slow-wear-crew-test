@@ -4,59 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>슬로우 웨어 크루 - 설문 선택</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <style>
-        /* CSS는 기존 파일과 동일하게 유지하고, 이 파일에서는 토스트/대시보드 관련 CSS만 제거합니다. */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; position: relative; }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .header p { opacity: 0.9; font-size: 14px; }
-        .content { padding: 30px; }
-        .login-screen, .survey-select-screen { display: none; }
-        .login-screen.active, .survey-select-screen.active { display: block; }
-        .input-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; margin-bottom: 20px;}
-        .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .btn:hover { transform: translateY(-2px); }
-        .btn-secondary { background: #6c757d; margin-top: 10px; }
-        .link-grid { display: flex; gap: 20px; margin-top: 30px;}
-        .btn-link { flex: 1; display: block; padding: 18px; text-decoration: none; border-radius: 10px; font-size: 16px; font-weight: 600; text-align: center; color: white; transition: transform 0.2s; }
-        #link-sensory { background: #FF99AA; }
-        #link-progress { background: #667eea; }
-        .disabled {
-            /* 텍스트 색상을 흐리게 */
-            color: #aaa !important;
-            /* 마우스 커서를 '금지' 모양으로 변경 */
-            cursor: not-allowed !important;
-            /* 클릭 이벤트가 요소 아래로 전달되도록 설정 (옵션) */
-            pointer-events: none; 
-        }
-        .admin-link { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            background: rgba(255,255,255,0.2); 
-            color: white; 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            text-decoration: none; 
-            font-size: 12px; 
-            font-weight: 600;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        .admin-link:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-    </style>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/index.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <a href="admin.html" class="admin-link">🔐 Admin</a>  <!-- ← 이 줄 추가 -->
+            <a href="admin.html" class="admin-link">🔐 Admin</a>
             <h1>슬로우 웨어 크루</h1>
             <p>설문 선택 및 접속</p>
         </div>
@@ -86,121 +46,8 @@
         </div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCIjXYco5ydEsXcap0kq2hvRstNT4vjorY",
-            authDomain: "slow-wear-crew.firebaseapp.com",
-            projectId: "slow-wear-crew",
-            storageBucket: "slow-wear-crew.firebasestorage.app",
-            messagingSenderId: "281669334869",
-            databaseURL: "https://slow-wear-crew-default-rtdb.asia-southeast1.firebasedatabase.app",
-            appId: "1:281669334869:web:e8ebacf777c25127a5e1dc",
-            measurementId: "G-ZSQMNN9WSH"
-        };
-        let app, database;
-        try {
-            app = firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-        } catch (error) { console.log("Firebase 설정이 필요합니다:", error); }
-
-        let currentUser = null;
-        let currentSessionId = null;
-        let isAdmin = false;
-
-        // 화면 전환 (login/select만)
-        function showScreen(screenName) {
-            document.querySelectorAll('.login-screen, .survey-select-screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.querySelector(`.${screenName}`).classList.add('active');
-        }
-
-        // 로그인
-        async function login() {
-            const input = document.getElementById('loginInput').value.trim();
-            if (!input || !database) return;
-
-            try {
-                // 1. 관리자 확인
-                const adminSnapshot = await database.ref(`admin/${input}`).once('value');
-                if (adminSnapshot.exists()) {
-                    isAdmin = true;
-                    sessionStorage.setItem('isAdmin', 'true');
-                    location.hash = '#select';
-                    return;
-                }
-                
-                // 2. 참가자 확인 및 세션 정보 로드
-                const participantsSnapshot = await database.ref('participants')
-                    .orderByChild('accessCode')
-                    .equalTo(input.toUpperCase())
-                    .once('value');
-                
-                const participants = participantsSnapshot.val();
-                
-                if (participants && Object.keys(participants).length > 0) {
-                    const userId = Object.keys(participants)[0];
-                    const userData = participants[userId];
-
-                    const sessionSnapshot = await database.ref(`sessions/${userData.sessionId}`).once('value');
-                    const sessionData = sessionSnapshot.val();
-                    
-                    if (!sessionData || !sessionData.sensorySurveyTemplateId || !sessionData.wearingProgressSurveyTemplateId) {
-                         alert('오류: 이 세션에 할당된 설문지 템플릿 정보가 불완전합니다.');
-                         return;
-                    }
-
-                    // ✅ [핵심] 두 템플릿 ID를 모두 저장
-                    sessionStorage.setItem('currentUser', userId);
-                    sessionStorage.setItem('currentSessionId', userData.sessionId);
-                    sessionStorage.setItem('accessCode', input.toUpperCase());
-                    sessionStorage.setItem('sensorySurveyTemplateId', sessionData.sensorySurveyTemplateId);
-                    sessionStorage.setItem('wearingProgressSurveyTemplateId', sessionData.wearingProgressSurveyTemplateId);
-                    
-                    // 마지막 접속 시간 업데이트
-                    await database.ref(`participants/${userId}/lastAccess`).set(new Date().toISOString());
-                    
-                    location.hash = '#select'; 
-                } else {
-                    alert('유효하지 않은 코드 또는 비밀번호입니다.');
-                }
-                
-            } catch (error) {
-                console.error('로그인 오류:', error);
-                alert('로그인 중 오류: ' + error.message);
-            }
-        }
-
-        // 로그아웃
-        function logout() {
-            sessionStorage.clear();
-            document.getElementById('loginInput').value = '';
-            location.hash = '#login';
-        }
-
-        // 라우터
-        async function handleRouteChange() {
-            const hash = window.location.hash || '#login';
-            const savedUser = sessionStorage.getItem('currentUser');
-            const savedIsAdmin = sessionStorage.getItem('isAdmin');
-
-            if (hash === '#select') {
-                if (!savedUser && !savedIsAdmin) return location.hash = '#login';
-                // 관리자는 이 페이지에서 로그아웃만 가능
-                showScreen('survey-select-screen'); 
-                
-            } else { // '#login'
-                if (savedUser || savedIsAdmin) {
-                    location.hash = '#select'; 
-                } else {
-                    showScreen('login-screen');
-                }
-            }
-        }
-
-        window.addEventListener('load', handleRouteChange);
-        window.addEventListener('hashchange', handleRouteChange);
-        document.getElementById('loginInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
-    </script>
+    <!-- JavaScript -->
+    <script src="js/firebase-init.js"></script>
+    <script src="js/index.js"></script>
 </body>
 </html>
