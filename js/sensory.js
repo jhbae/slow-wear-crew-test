@@ -45,8 +45,13 @@ async function ensureSurveyDataLoaded() {
         return true;
 
     } catch (error) {
-        console.error('설문지 로드 오류:', error);
-        alert('설문지를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 설문지 로드 실패:', error);
+        console.error('상세 정보:', {
+            templateId: currentSurveyTemplateId,
+            path: `surveys/${currentSurveyTemplateId}`,
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
         logout();
         return false;
     }
@@ -72,19 +77,10 @@ function logout() {
 
 // 참가자 대시보드 로드
 async function loadParticipantDashboard() {
-    console.log('[DEBUG] loadParticipantDashboard 시작');
-
     // ✅ [추가] 설문지 로드 확인
-    if (!await ensureSurveyDataLoaded()) {
-        console.log('[DEBUG] 설문지 로드 실패');
-        return;
-    }
-    console.log('[DEBUG] 설문지 로드 성공:', surveyData);
+    if (!await ensureSurveyDataLoaded()) return;
 
-    if (!currentUser || !currentSessionId) {
-        console.log('[DEBUG] 사용자 정보 없음:', { currentUser, currentSessionId });
-        return;
-    }
+    if (!currentUser || !currentSessionId) return;
 
     try {
         // 회차 정보 가져오기
@@ -157,9 +153,7 @@ async function loadParticipantDashboard() {
                     if (catData && catData.questions) {
                         // ✅ [수정] 점수를 동적으로 계산
                         const calculatedTotal = catData.questions.reduce((sum, q) => sum + q.value, 0);
-                        console.log('[DEBUG] calculateSensitivity 호출 전:', { calculatedTotal, scoreRange: category.scoreRange });
                         const sensitivity = calculateSensitivity(calculatedTotal, category.scoreRange);
-                        console.log('[DEBUG] calculateSensitivity 결과:', sensitivity);
 
                         categoryScores += `
                             <div class="score-item">
@@ -202,8 +196,14 @@ async function loadParticipantDashboard() {
         }
 
     } catch (error) {
-        console.error('대시보드 로드 오류:', error);
-        alert('데이터를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 대시보드 로드 실패:', error);
+        console.error('상세 정보:', {
+            participantId: currentUser,
+            sessionId: currentSessionId,
+            path: `responses/${currentUser}`,
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
     }
 }
 
@@ -341,8 +341,14 @@ async function loadSurvey() {
 
         updateProgress(); // 진행률 업데이트
     } catch (error) {
-        console.error('설문 로드 오류:', error);
-        content.innerHTML = '설문 로드 중 오류가 발생했습니다.';
+        console.error('❌ 설문 로드 실패:', error);
+        console.error('상세 정보:', {
+            participantId: currentUser,
+            week: currentWeek,
+            path: `responses/${currentUser}/week${currentWeek}/sensory`,
+            error: error.message
+        });
+        content.innerHTML = '문제가 발생했습니다.<br>관리자에게 문의해주세요.<br><br>(개발자: 콘솔을 확인하세요)';
     }
 }
 
@@ -429,12 +435,24 @@ async function submitSurvey() {
         const storageKey = `draft_sensory_week${currentWeek}_${currentUser}`;
         localStorage.removeItem(storageKey);
 
+        console.log('✅ 설문 제출 성공:', {
+            participantId: currentUser,
+            week: currentWeek,
+            timestamp: data.timestamp
+        });
+
         alert('제출이 완료되었습니다!');
 
         location.hash = '#dashboard';
     } catch (error) {
-        console.error('제출 오류:', error);
-        alert('제출 중 오류가 발생했습니다: ' + error.message);
+        console.error('❌ 설문 제출 실패:', error);
+        console.error('상세 정보:', {
+            participantId: currentUser,
+            week: currentWeek,
+            path: `responses/${currentUser}/week${currentWeek}/sensory`,
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
     }
 }
 
@@ -554,8 +572,12 @@ async function loadAdminPage() {
             container.appendChild(sessionDiv);
         }
     } catch (error) {
-        console.error('관리자 페이지 로드 오류:', error);
-        alert('데이터를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 관리자 페이지 로드 실패:', error);
+        console.error('상세 정보:', {
+            path: 'sessions, participants, responses',
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
     }
 }
 
@@ -610,8 +632,13 @@ async function viewSessionDetail(sessionId) {
             container.appendChild(userDiv);
         }
     } catch (error) {
-        console.error('회차 상세 로드 오류:', error);
-        alert('데이터를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 회차 상세 로드 실패:', error);
+        console.error('상세 정보:', {
+            sessionId,
+            path: `sessions/${sessionId}, participants`,
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
     }
 }
 
@@ -699,8 +726,13 @@ async function viewUserResponses(userId) {
             container.appendChild(weekDiv);
         }
     } catch (error) {
-        console.error('사용자 응답 로드 오류:', error);
-        alert('데이터를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 사용자 응답 로드 실패:', error);
+        console.error('상세 정보:', {
+            userId,
+            path: `participants/${userId}, responses/${userId}`,
+            error: error.message
+        });
+        alert('문제가 발생했습니다.\n관리자에게 문의해주세요.\n\n(개발자: 콘솔을 확인하세요)');
     }
 }
 
