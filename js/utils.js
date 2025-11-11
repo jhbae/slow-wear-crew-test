@@ -1,4 +1,4 @@
-// 공통 유틸리티 함수
+// 공통 유틸리티 함수 (일반 script 전용)
 
 /**
  * 민감도 레벨 계산
@@ -27,17 +27,3 @@ function calculateSensitivity(score, scoreRange) {
     // 범위를 벗어난 경우
     return { level: 'na', text: '범위 오류' };
 }
-
-// 일반 script와 모듈 방식 모두 지원
-if (typeof module !== 'undefined' && module.exports) {
-    // CommonJS (Node.js)
-    module.exports = { calculateSensitivity };
-}
-
-if (typeof window !== 'undefined') {
-    // 브라우저 전역 변수로 export
-    window.calculateSensitivity = calculateSensitivity;
-}
-
-// ES6 모듈 방식 export (admin.js에서 사용)
-export { calculateSensitivity };
